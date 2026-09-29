@@ -8,11 +8,11 @@ Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estad
 
 ## Estado actual del despliegue
 
-- ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (privado)
+- ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (**público** — Actions gratis ilimitadas)
 - ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), deploy automático en cada push a `main`
-- ✅ GitHub Actions: workflow `snapshot.yml` cada 15 min (secrets ya configurados)
+- ✅ Turso: BD `puentes` creada y conectada (env vars en Vercel)
+- ✅ Cron: GitHub Actions cada 15 min **verificado en producción** (workflow `snapshot.yml`)
 - ⏳ Dominio: comprar `reportedepuentesoficial.mx` y conectarlo en Vercel
-- ⏳ Turso: falta `turso auth login` y crear la BD (comandos abajo)
 
 ## Desarrollo local
 
