@@ -12,7 +12,18 @@ Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estad
 - ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), deploy automático en cada push a `main`
 - ✅ Turso: BD `puentes` creada y conectada (env vars en Vercel)
 - ✅ Cron: GitHub Actions cada 15 min **verificado en producción** (workflow `snapshot.yml`)
-- ⏳ Dominio: comprar `reportedepuentesoficial.mx` y conectarlo en Vercel
+
+### ⏳ ÚNICO PENDIENTE: comprar el dominio
+
+**`reportedepuentesoficial.mx`** (~$350 MXN/año) — compra planeada para el **sábado**. Verificado disponible en NIC.mx y .com en Verisign al 29/sep/2026.
+
+Cuando esté comprado, conectarlo (10 min):
+1. En Vercel: proyecto `reportedepuentes-mx` → Settings → Domains → agregar `reportedepuentesoficial.mx` (+ `www` con redirect)
+2. En el registrar: apuntar los registros DNS que Vercel indique
+3. Actualizar `NEXT_PUBLIC_SITE_URL` en Vercel a `https://reportedepuentesoficial.mx` y redeploy
+4. Enviar `https://reportedepuentesoficial.mx/sitemap.xml` en Google Search Console
+
+Nota: mientras no haya dominio propio, la URL pública es https://reportedepuentes-mx.vercel.app (las URLs de deployment exigen login SSO del equipo Vercel; el dominio propio no).
 
 ## Desarrollo local
 
