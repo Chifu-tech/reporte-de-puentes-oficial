@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { crossings } from "@/lib/crossings";
 import { fetchRawCbp, type LaneKey } from "@/lib/cbp";
-import { insertSnapshots, type SnapshotRow } from "@/lib/db";
+import { insertSnapshots, minutesSinceLastCapture, type SnapshotRow } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +43,12 @@ export async function POST(req: Request) {
     if (provided !== secret) {
       return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
     }
+  }
+
+  // Guard anti-duplicados: si otro scheduler acaba de capturar, se omite.
+  const age = await minutesSinceLastCapture();
+  if (age !== null && age < 10) {
+    return NextResponse.json({ ok: true, skipped: true, minutesSinceLast: Math.round(age) });
   }
 
   try {

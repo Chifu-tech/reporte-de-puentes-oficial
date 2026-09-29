@@ -39,6 +39,20 @@ export async function initDb(): Promise<void> {
   );
 }
 
+/** Minutos desde la última captura (null si no hay datos o falla la DB). */
+export async function minutesSinceLastCapture(): Promise<number | null> {
+  try {
+    await initDb();
+    const rs = await getDb().execute("SELECT MAX(captured_at) as last FROM snapshots");
+    const last = rs.rows[0]?.last;
+    if (typeof last !== "string") return null;
+    const age = (Date.now() - new Date(last).getTime()) / 60000;
+    return Number.isFinite(age) ? age : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function insertSnapshots(rows: SnapshotRow[]): Promise<number> {
   if (rows.length === 0) return 0;
   await initDb();
