@@ -11,15 +11,16 @@ Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estad
 - ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (**público** — Actions gratis ilimitadas)
 - ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), **auto-deploy conectado** en cada push a `main`
 - ✅ Turso: BD `puentes` creada y conectada (env vars en Vercel)
-- ✅ Captura cada 15 min: **launchd en la Mac de Pablo** (`~/Library/LaunchAgents/mx.reportedepuentes.snapshot.plist`, log en `/tmp/reporte-puentes-cron.log`)
+- ✅ Captura cada 15 min: **n8n de Pablo** (workflow `Reporte de Puentes — Captura Histórica`, importable desde `n8n-reporte-de-puentes-captura.json`) + respaldo temporal con launchd en su Mac (`~/Library/LaunchAgents/mx.reportedepuentes.snapshot.plist`)
 - ✅ Guard anti-duplicados en `/api/cron/snapshot` (múltiples schedulers seguros)
-- ⚠️ El schedule de GitHub Actions quedó registrado pero NO dispara (cuenta con billing bloqueado cuando se creó; si se recupera, el guard evita dobles capturas). Solución permanente cuando se quiera: cron-job.org (gratis) o arreglar billing de GitHub.
+- ⚠️ El schedule de GitHub Actions quedó registrado pero NO dispara (cuenta con billing bloqueado cuando se creó). No depende de él: si algún día revive, el guard evita dobles capturas.
 
-### Scheduler permanente (pendiente menor)
+### Scheduler permanente: n8n (decisión tomada)
 
-El launchd solo corre con la Mac encendida. Para capturas 24/7 sin huecos:
-1. Crear cuenta en cron-job.org (gratis) → job cada 15 min a `POST https://<dominio>/api/cron/snapshot` con header `Authorization: Bearer <CRON_SECRET>`, **o**
-2. Arreglar el billing de GitHub (también desbloquea Actions de los otros repos)
+El workflow vive en el n8n de Pablo (herramienta ya existente en su stack, sin cuentas nuevas).
+Al importarlo y activarlo: Schedule cada 15 min → POST al endpoint con el CRON_SECRET.
+Una vez confirmado corriendo, quitar el launchd temporal:
+`launchctl bootout gui/$(id -u)/mx.reportedepuentes.snapshot`
 
 ### ⏳ ÚNICO PENDIENTE: comprar el dominio
 
