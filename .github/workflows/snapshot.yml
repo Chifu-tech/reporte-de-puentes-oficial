@@ -10,7 +10,7 @@ name: Snapshot CBP
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "4-59/15 * * * *" # :04, :19, :34, :49 — fuera de los minutos pico de GitHub
   workflow_dispatch:
 
 jobs:
