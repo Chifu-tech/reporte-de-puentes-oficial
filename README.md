@@ -11,16 +11,15 @@ Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estad
 - ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (**público** — Actions gratis ilimitadas)
 - ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), **auto-deploy conectado** en cada push a `main`
 - ✅ Turso: BD `puentes` creada y conectada (env vars en Vercel)
-- ✅ Captura cada 15 min: **n8n de Pablo** (workflow `Reporte de Puentes — Captura Histórica`, importable desde `n8n-reporte-de-puentes-captura.json`) + respaldo temporal con launchd en su Mac (`~/Library/LaunchAgents/mx.reportedepuentes.snapshot.plist`)
+- ✅ Captura cada 15 min: **n8n de Pablo** (workflow `Reporte de Puentes — Captura Histórica`) — **verificado en producción, corriendo solo desde las 17:45 UTC del 29/sep/2026**
 - ✅ Guard anti-duplicados en `/api/cron/snapshot` (múltiples schedulers seguros)
-- ⚠️ El schedule de GitHub Actions quedó registrado pero NO dispara (cuenta con billing bloqueado cuando se creó). No depende de él: si algún día revive, el guard evita dobles capturas.
+- ✅ launchd de la Mac: **removido** (solo fue puente durante la transición)
+- ⚠️ El schedule de GitHub Actions quedó registrado pero NO dispara (billing de la cuenta). No depende de él: si revive, el guard evita dobles capturas.
 
-### Scheduler permanente: n8n (decisión tomada)
+### Scheduler permanente: n8n ✓ (operando)
 
-El workflow vive en el n8n de Pablo (herramienta ya existente en su stack, sin cuentas nuevas).
-Al importarlo y activarlo: Schedule cada 15 min → POST al endpoint con el CRON_SECRET.
-Una vez confirmado corriendo, quitar el launchd temporal:
-`launchctl bootout gui/$(id -u)/mx.reportedepuentes.snapshot`
+El workflow corre en el n8n de Pablo: Schedule cada 15 min → POST al endpoint con el CRON_SECRET.
+El JSON para reimportarlo (si se necesita) está en `~/Desktop/n8n-reporte-de-puentes-captura.json` — **no subirlo al repo** (contiene el secreto).
 
 ### ⏳ ÚNICO PENDIENTE: comprar el dominio
 
