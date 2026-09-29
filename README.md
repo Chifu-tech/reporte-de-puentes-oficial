@@ -1,8 +1,18 @@
 # Reporte de Puentes Oficial — reportedepuentesoficial.mx
 
+** Producción: https://reportedepuentes-mx.vercel.app (URL temporal hasta conectar el dominio propio)
+
 Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estados Unidos: minutos de espera, carriles abiertos, cruce peatonal, cámaras en vivo (Ciudad Juárez) y la mejor hora para cruzar según promedios históricos.
 
 **Stack**: Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Turso (SQLite) · Vercel · GitHub Actions
+
+## Estado actual del despliegue
+
+- ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (privado)
+- ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), deploy automático en cada push a `main`
+- ✅ GitHub Actions: workflow `snapshot.yml` cada 15 min (secrets ya configurados)
+- ⏳ Dominio: comprar `reportedepuentesoficial.mx` y conectarlo en Vercel
+- ⏳ Turso: falta `turso auth login` y crear la BD (comandos abajo)
 
 ## Desarrollo local
 
@@ -44,12 +54,13 @@ Copia `.env.example` a `.env.local` y llena lo que necesites:
 ### 2. Turso (base de datos histórica, free tier)
 
 ```bash
-brew install tursodatabase/tap/turso   # o instala desde https://turso.tech
-turso auth signup
-turso db create reporte-de-puentes-oficial
-turso db show reporte-de-puentes-oficial --url     # → TURSO_DATABASE_URL
-turso db tokens create reporte-de-puentes-oficial  # → TURSO_AUTH_TOKEN
+turso auth login                    # abrirá el navegador (una sola vez)
+turso db create puentes
+turso db show puentes --url         # → TURSO_DATABASE_URL
+turso db tokens create puentes      # → TURSO_AUTH_TOKEN
 ```
+
+Luego en Vercel (Settings → Environment Variables del proyecto `reportedepuentes-mx`) agrega `TURSO_DATABASE_URL` y `TURSO_AUTH_TOKEN` en Production y haz redeploy. Con eso, el cron de GitHub Actions empieza a llenar el historial solo.
 
 ### 3. Vercel
 
