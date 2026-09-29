@@ -6,6 +6,7 @@ import BestHourChart, { DayAverages } from "@/components/BestHourChart";
 import JsonLd from "@/components/JsonLd";
 import { cities, citiesBySlug, crossingsForCity } from "@/lib/crossings";
 import { averageDelayByDay, averageDelayByHour } from "@/lib/db";
+import { lineWord, termPlural } from "@/lib/seo";
 import { site, absoluteUrl } from "@/lib/site";
 
 export const revalidate = 900;
@@ -19,8 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const city = citiesBySlug.get(slug);
   if (!city) return {};
   return {
-    title: `Mejor hora para cruzar en ${city.name} — Promedios por hora`,
-    description: `Cuál es la mejor hora para cruzar la frontera en ${city.name} (${city.nameUs}): promedios de espera por hora y por día en ${crossingsForCity(slug).map((c) => c.name).join(", ")}.`,
+    title: `Mejor hora para cruzar en ${city.name}: ${termPlural(city)} con menos ${lineWord(city).replace("la ", "")}`,
+    description: `¿A qué hora hay menos ${lineWord(city).replace("la ", "")} en ${city.name}? Promedios de espera por hora y por día de la semana en ${crossingsForCity(slug).map((c) => c.name).join(", ")}, con datos oficiales de U.S. CBP.`,
     alternates: { canonical: `/mejor-hora-para-cruzar/${city.slug}` },
   };
 }
@@ -85,12 +86,14 @@ export default async function MejorHoraCity({ params }: { params: Promise<{ slug
                   {crossing.name}
                 </Link>
               </h2>
-              <Link
-                href={`/puente/${crossing.slug}`}
-                className="text-[12.5px] font-medium text-sage-ink hover:text-sage-ink"
-              >
-                Ver línea en vivo →
-              </Link>
+              <span className="flex gap-3 text-[12.5px] font-medium text-sage-ink">
+                <Link href={`/mejor-hora-para-cruzar/${city.slug}/${crossing.slug}`} className="hover:underline">
+                  Por día →
+                </Link>
+                <Link href={`/puente/${crossing.slug}`} className="hover:underline">
+                  En vivo →
+                </Link>
+              </span>
             </div>
             <BestHourChart data={hourly} tz={city.tz} />
             <DayAverages data={daily} />

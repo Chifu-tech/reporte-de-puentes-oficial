@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CameraSource } from "@/lib/crossings";
+import { track } from "@/lib/track";
 
 function HlsPlayer({ src, label }: { src: string; label: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -68,6 +69,30 @@ function CameraFallback({ label }: { label: string }) {
   );
 }
 
+/** Foto fija que se vuelve a pedir cada minuto (cámaras que solo publican JPEG). */
+function SnapshotCam({ src, label }: { src: string; label: string }) {
+  const [tick, setTick] = useState<number | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (failed) return <CameraFallback label={label} />;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- imagen externa que cambia cada minuto
+    <img
+      src={tick ? `${src}?t=${tick}` : src}
+      alt={`Cámara en vivo: ${label}`}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="aspect-video w-full rounded-xl border border-line-soft bg-ink object-cover"
+    />
+  );
+}
+
 export default function CameraPlayer({ camera }: { camera: CameraSource }) {
   const [started, setStarted] = useState(camera.type !== "hls");
 
@@ -78,7 +103,10 @@ export default function CameraPlayer({ camera }: { camera: CameraSource }) {
           <HlsPlayer src={camera.src} label={camera.label} />
         ) : (
           <button
-            onClick={() => setStarted(true)}
+            onClick={() => {
+              setStarted(true);
+              track("ver_camara", { camara: camera.label });
+            }}
             className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-line bg-sage-soft transition-colors hover:bg-sage/15"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage text-white" aria-hidden>
@@ -88,6 +116,17 @@ export default function CameraPlayer({ camera }: { camera: CameraSource }) {
           </button>
         )}
         <figcaption className="mt-1.5 text-center text-[11.5px] text-ink-faint">{camera.label}</figcaption>
+      </figure>
+    );
+  }
+
+  if (camera.type === "image") {
+    return (
+      <figure>
+        <SnapshotCam src={camera.src} label={camera.label} />
+        <figcaption className="mt-1.5 text-center text-[11.5px] text-ink-faint">
+          {camera.label} · se actualiza cada minuto
+        </figcaption>
       </figure>
     );
   }

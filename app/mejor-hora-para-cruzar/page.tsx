@@ -6,9 +6,9 @@ import { sortedCities, crossingsForCity } from "@/lib/crossings";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Mejor hora para cruzar la frontera México–Estados Unidos",
+  title: "Mejor hora para cruzar la frontera: puentes y garitas México–EU",
   description:
-    "Descubre la mejor hora para cruzar cada puente internacional de México a Estados Unidos según promedios históricos de espera: madrugada vs hora pico, por día de la semana, en cada garita.",
+    "¿A qué hora hay menos fila para cruzar a Estados Unidos? La mejor hora para cruzar cada puente y garita según promedios históricos de espera: madrugada vs hora pico, sábado, domingo y entre semana.",
   alternates: { canonical: "/mejor-hora-para-cruzar" },
 };
 

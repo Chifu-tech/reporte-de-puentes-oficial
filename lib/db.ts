@@ -160,3 +160,66 @@ export async function averageDelayByDay(
   }
   return sums.map((s, i) => ({ day: i, avgDelay: counts[i] > 0 ? Math.round(s / counts[i]) : null }));
 }
+
+export interface DayHourAverage {
+  day: number; // 0 = domingo
+  hour: number;
+  avgDelay: number | null;
+  samples: number;
+}
+
+/** Promedio por día de la semana y hora local (7 × 24), para "mejor hora el sábado". */
+export async function averageDelayByDayHour(
+  portNumber: string,
+  laneKeys: string[],
+  tz: string,
+  days = 60
+): Promise<DayHourAverage[]> {
+  const sums = Array.from({ length: 7 }, () => new Array(24).fill(0));
+  const counts = Array.from({ length: 7 }, () => new Array(24).fill(0));
+  try {
+    await initDb();
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const placeholders = laneKeys.map(() => "?").join(",");
+    const rs = await getDb().execute({
+      sql: `SELECT captured_at, delay_minutes FROM snapshots
+            WHERE port_number = ? AND lane_key IN (${placeholders})
+              AND captured_at >= ? AND delay_minutes IS NOT NULL`,
+      args: [portNumber, ...laneKeys, since],
+    });
+    const fmt = new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", hour12: false, timeZone: tz });
+    const dayIndex: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    for (const row of rs.rows) {
+      const parts = fmt.formatToParts(new Date(row.captured_at as string));
+      const day = dayIndex[parts.find((p) => p.type === "weekday")?.value ?? ""];
+      const hour = Number.parseInt(parts.find((p) => p.type === "hour")?.value ?? "", 10) % 24;
+      const delay = row.delay_minutes as number;
+      if (day !== undefined && hour >= 0 && hour < 24 && delay >= 0 && delay < 600) {
+        sums[day][hour] += delay;
+        counts[day][hour] += 1;
+      }
+    }
+  } catch {
+    // sin datos
+  }
+  return sums.flatMap((row, day) =>
+    row.map((s, hour) => ({
+      day,
+      hour,
+      avgDelay: counts[day][hour] > 0 ? Math.round(s / counts[day][hour]) : null,
+      samples: counts[day][hour],
+    }))
+  );
+}
+
+/** Fecha de la primera captura histórica (null si no hay datos). */
+export async function firstCaptureDate(): Promise<Date | null> {
+  try {
+    await initDb();
+    const rs = await getDb().execute("SELECT MIN(captured_at) as first FROM snapshots");
+    const first = rs.rows[0]?.first;
+    return typeof first === "string" ? new Date(first) : null;
+  } catch {
+    return null;
+  }
+}

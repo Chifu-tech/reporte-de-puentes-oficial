@@ -58,8 +58,9 @@ Copia `.env.example` a `.env.local` y llena lo que necesites:
 | `TURSO_DATABASE_URL` | Sí (prod) | URL de la BD Turso (`libsql://...`) |
 | `TURSO_AUTH_TOKEN` | Sí (prod) | Token de acceso a Turso |
 | `CRON_SECRET` | Sí (prod) | Secreto compartido GitHub Actions ↔ Vercel para `/api/cron/snapshot` |
-| `NEXT_PUBLIC_ADS_ENABLED` | No | `true` activa AdSense (dejar apagado hasta fase de monetización) |
-| `NEXT_PUBLIC_ADSENSE_CLIENT` | No | `ca-pub-XXXX` de tu cuenta de AdSense |
+| `NEXT_PUBLIC_GA_ID` | No | ID de medición de Google Analytics 4 (`G-XXXX`). Vacío = GA apagado |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | No | `ca-pub-XXXX` de AdSense. Con solo ponerlo se cargan el script, la meta `google-adsense-account` y `/ads.txt` (verificación del sitio) |
+| `NEXT_PUBLIC_ADS_ENABLED` | No | `true` enciende además los bloques manuales `AdSlot` |
 
 ## Despliegue a producción (una sola vez)
 
@@ -108,15 +109,22 @@ El workflow `.github/workflows/snapshot.yml` corre cada 15 min ya configurado. S
 ```
 app/
 ├── page.tsx                        # Home: toggle coche/peatón + tarjetas por ciudad
-├── ciudad/[slug]/                  # 18 páginas por ciudad fronteriza
-├── puente/[slug]/                  # 34 páginas por puente (SEO principal)
-├── mejor-hora-para-cruzar/[slug]/  # Promedios históricos por hora y día
+├── ciudad/[slug]/                  # 22 páginas por ciudad fronteriza (+ imagen OG en vivo)
+├── puente/[slug]/                  # 41 páginas por puente/garita (SEO principal, + imagen OG en vivo)
+├── mejor-hora-para-cruzar/[slug]/  # Promedios históricos por ciudad…
+│   └── [puente]/                   # …y por puente, día por día
+├── horarios-puentes-internacionales/ # Horario oficial CBP de cada cruce
+├── camaras-en-vivo/                # Hub de cámaras públicas
+├── guias/[slug]/                   # Guías evergreen (SENTRI, Ready Lane, I-94…) — contenido en lib/guias.ts
+├── ads.txt/route.ts                # ads.txt de AdSense desde NEXT_PUBLIC_ADSENSE_CLIENT
 ├── api/waittimes/route.ts          # API pública JSON (caché 5 min)
 ├── api/cron/snapshot/route.ts      # Captura histórica (protegida con CRON_SECRET)
 ├── sitemap.ts · robots.ts · manifest.ts
 components/                         # Board (cliente), cámaras HLS, gráficas SVG, AdSlot
 lib/
-├── crossings.ts                    # Catálogo: ciudades, puentes, cámaras, copy SEO
+├── crossings.ts                    # Catálogo: ciudades (term puente/garita), cruces, apodos, cámaras
+├── seo.ts                          # Títulos/descripciones con vocabulario local y minutos en vivo
+├── guias.ts                        # Contenido de las guías (con fuentes oficiales)
 ├── cbp.ts                          # Fetch + normalización de la API de U.S. CBP
 ├── db.ts                           # Turso/libsql: snapshots y agregaciones
 └── board.ts                        # Datos de la home
@@ -127,13 +135,20 @@ lib/
 - **Cámaras**: streams públicos HLS de la Ciudad de El Paso (`zoocams.elpasozoo.org`), embeds de CamStreamer (Fideicomiso de Puentes Fronterizos de Chihuahua) y lives de YouTube. Son de terceros y pueden caer; cada cámara tiene fallback visual.
 - **Semáforo**: verde ≤ 20 min · amarillo 21–44 min · rojo ≥ 45 min · gris cerrado/sin datos.
 
-## Monetización (fase 2)
+## Analítica y SEO
 
-El sitio ya tiene el componente `AdSlot` integrado en el layout (home, páginas de puente, ciudad y mejor hora), **desactivado por defecto**. Cuando haya tráfico (~500 visitantes/día):
+- **GA4**: `NEXT_PUBLIC_GA_ID`. Eventos propios: `buscar` (qué escriben en el buscador), `cambiar_modo`, `ver_camara`, `asistente_pregunta`, `compartir`. Los clics de salida (Google Maps) los mide la medición mejorada de GA4.
+- **Vocabulario local**: cada ciudad tiene `term` (`garita` en BC/Sonora, `puente` en el resto) y cada cruce `aliases` (Santa Fe, Lerdo, El Chaparral, Puente Viejo…). Los títulos, H1, FAQ y el buscador los usan: agrega apodos nuevos ahí.
+- **Títulos con minutos en vivo** (`lib/seo.ts`), FAQ dinámico por puente y ciudad, imagen OG en vivo para compartir en WhatsApp/Facebook.
 
-1. Aplica a Google AdSense con el sitio ya indexado (política de privacidad y páginas de contacto/nosotros ya existen).
-2. Al aprobar, pon `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXX` y `NEXT_PUBLIC_ADS_ENABLED=true` en Vercel.
-3. Reemplaza los `slot="..."` de los componentes `AdSlot` por los IDs reales de tus bloques de anuncios.
+## Monetización
+
+`AdSlot` ya está en home, puentes, ciudades, mejor hora, horarios, cámaras y guías, **apagado por defecto**.
+
+1. Con el dominio propio ya conectado, pon `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXX` en Vercel y redeploy: carga el script, la meta de verificación y `/ads.txt`.
+2. En AdSense → Sitios, agrega el dominio y pide revisión (no acepta subdominios `vercel.app`).
+3. Al aprobar: activa Auto ads desde el panel, **o** pon `NEXT_PUBLIC_ADS_ENABLED=true` y reemplaza los `slot="..."` de `AdSlot` por los IDs reales de tus bloques.
+4. Para visitantes de la UE/Reino Unido/Suiza, activa el mensaje de consentimiento en AdSense → Privacidad y mensajes.
 
 ## Mantenimiento
 

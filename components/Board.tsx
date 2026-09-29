@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { CityDisplay, CrossingDisplay, LaneSnapshot, Mode } from "@/lib/board";
 import { sevStyles, formatMinutes } from "@/lib/severity";
+import { track } from "@/lib/track";
 
 function Row({ c, mode }: { c: CrossingDisplay; mode: Mode }) {
   const snap: LaneSnapshot = mode === "auto" && !c.pedestrianOnly ? c.auto : c.peaton;
@@ -47,6 +48,20 @@ export default function Board({ cities }: { cities: CityDisplay[] }) {
   const [mode, setMode] = useState<Mode>("auto");
   const [query, setQuery] = useState("");
 
+  // Qué buscan (y con qué apodos) — se manda cuando dejan de escribir.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) return;
+    const t = setTimeout(() => track("buscar", { search_term: q.slice(0, 100) }), 1200);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  function changeMode(next: Mode) {
+    if (next === mode) return;
+    setMode(next);
+    track("cambiar_modo", { modo: next });
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return cities;
@@ -57,7 +72,11 @@ export default function Board({ cities }: { cities: CityDisplay[] }) {
       .map((city) => ({
         ...city,
         crossings: city.crossings.filter(
-          (c) => norm(c.name).includes(nq) || norm(c.nameUs).includes(nq) || norm(city.name).includes(nq)
+          (c) =>
+            norm(c.name).includes(nq) ||
+            norm(c.nameUs).includes(nq) ||
+            c.aliases.some((a) => norm(a).includes(nq)) ||
+            norm(city.name).includes(nq)
         ),
       }))
       .filter((city) => city.crossings.length > 0);
@@ -76,7 +95,7 @@ export default function Board({ cities }: { cities: CityDisplay[] }) {
             <button
               role="tab"
               aria-selected={mode === "auto"}
-              onClick={() => setMode("auto")}
+              onClick={() => changeMode("auto")}
               className={`flex-1 rounded-full py-1.5 text-[13.5px] font-semibold transition-colors ${
                 mode === "auto" ? "bg-sage text-white" : "text-ink-soft"
               }`}
@@ -86,7 +105,7 @@ export default function Board({ cities }: { cities: CityDisplay[] }) {
             <button
               role="tab"
               aria-selected={mode === "peaton"}
-              onClick={() => setMode("peaton")}
+              onClick={() => changeMode("peaton")}
               className={`flex-1 rounded-full py-1.5 text-[13.5px] font-semibold transition-colors ${
                 mode === "peaton" ? "bg-sage text-white" : "text-ink-soft"
               }`}

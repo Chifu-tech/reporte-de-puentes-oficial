@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { track } from "@/lib/track";
 
 interface ChatLink {
   label: string;
@@ -44,6 +45,7 @@ export default function Asistente() {
     const msg = text.trim();
     if (!msg || loading) return;
     setMessages((m) => [...m, { role: "user", text: msg }]);
+    track("asistente_pregunta", { texto: msg.slice(0, 100) });
     setInput("");
     setLoading(true);
     try {

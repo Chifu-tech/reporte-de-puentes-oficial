@@ -23,6 +23,7 @@ export interface CrossingDisplay {
   slug: string;
   name: string;
   nameUs: string;
+  aliases: string[];
   citySlug: string;
   pedestrianOnly: boolean;
   auto: LaneSnapshot;
@@ -70,6 +71,7 @@ export async function buildBoard(): Promise<CityDisplay[]> {
           slug: c.slug,
           name: c.name,
           nameUs: c.nameUs,
+          aliases: c.aliases ?? [],
           citySlug: c.citySlug,
           pedestrianOnly: c.pedestrianOnly ?? false,
           auto,

@@ -2,17 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Board from "@/components/Board";
 import AdSlot from "@/components/AdSlot";
-import JsonLd from "@/components/JsonLd";
 import { buildBoard } from "@/lib/board";
 import { sevStyles } from "@/lib/severity";
-import { site } from "@/lib/site";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Reporte de Puentes Oficial — Tiempo de espera en puentes México–Estados Unidos",
+  title: { absolute: "Reporte de Puentes y Garitas EN VIVO — Tiempo de espera hoy México–EU" },
   description:
-    "Consulta en tiempo real cuánto se tarda el cruce en cada puente internacional de México a Estados Unidos: Ciudad Juárez, Tijuana, Reynosa, Nuevo Laredo, Mexicali, Nogales y más. En coche o a pie, carriles abiertos y cámaras en vivo.",
+    "¿Cómo está la línea hoy? Tiempo de espera en vivo de todos los puentes y garitas de México a Estados Unidos: Juárez, Tijuana, Mexicali, Reynosa, Nuevo Laredo, Nogales, Matamoros y más. En coche o a pie, SENTRI, Ready Lane y cámaras.",
   alternates: { canonical: "/" },
 };
 
@@ -35,25 +33,17 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: site.name,
-          url: site.url,
-          inLanguage: "es-MX",
-          description: site.description,
-        }}
-      />
-
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <header className="pb-6 pt-9">
-          <h1 className="text-balance font-display text-[34px] font-normal leading-[1.05] tracking-tight text-ink sm:text-[42px]">
-            ¿Cuál cruce te conviene hoy?
+          <h1 className="mb-2 text-[11.5px] font-bold uppercase tracking-widest text-sage-ink">
+            Reporte de puentes y garitas en vivo
           </h1>
+          <p className="text-balance font-display text-[34px] font-normal leading-[1.05] tracking-tight text-ink sm:text-[42px]">
+            ¿Cuál cruce te conviene hoy?
+          </p>
           <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
-            {total} puentes de la frontera México–Estados Unidos, en tiempo real y con datos
-            oficiales de U.S. CBP.
+            {total} puentes y garitas de la frontera México–Estados Unidos: cómo está la línea
+            ahora mismo, con datos oficiales de U.S. CBP.
           </p>
 
           {bars.length > 0 && (
@@ -88,7 +78,7 @@ export default async function HomePage() {
 
         <section className="mt-10 rounded-2xl border border-line bg-surface p-5 sm:p-6">
           <h2 className="font-display text-[19px] font-normal tracking-tight text-ink">
-            El puente correcto ahorra horas de fila
+            El puente o la garita correcta ahorra horas de fila
           </h2>
           <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-soft">
             Las líneas varían más de una hora entre garitas de la misma ciudad: en Juárez, el Libre
@@ -103,14 +93,29 @@ export default async function HomePage() {
               la mejor hora para cruzar
             </Link>
             . Empieza por tu ciudad:{" "}
-            {board.slice(0, 8).map((c, i) => (
+            {board.map((c, i) => (
               <span key={c.slug}>
                 <Link href={`/ciudad/${c.slug}`} className="font-medium text-sage-ink hover:underline">
                   {c.name}
                 </Link>
-                {i < Math.min(board.length, 8) - 1 ? ", " : "."}
+                {i < board.length - 1 ? ", " : "."}
               </span>
             ))}
+          </p>
+          <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-soft">
+            ¿Vas a cruzar por primera vez o quieres hacerlo más rápido? Revisa{" "}
+            <Link href="/horarios-puentes-internacionales" className="font-medium text-sage-ink hover:underline">
+              los horarios de cada puente
+            </Link>
+            , las{" "}
+            <Link href="/camaras-en-vivo" className="font-medium text-sage-ink hover:underline">
+              cámaras en vivo
+            </Link>{" "}
+            y nuestras{" "}
+            <Link href="/guias" className="font-medium text-sage-ink hover:underline">
+              guías de SENTRI, Ready Lane, permiso I-94 y qué puedes pasar
+            </Link>
+            .
           </p>
         </section>
       </div>

@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { site } from "@/lib/site";
 
 declare global {
   interface Window {
     adsbygoogle?: unknown[];
   }
 }
+
+const adsOn = site.ads.enabled && Boolean(site.ads.client);
 
 /**
  * Espacio publicitario con AdSense.
@@ -18,7 +21,7 @@ export default function AdSlot({ slot, className = "" }: { slot: string; classNa
   const pushed = useRef(false);
 
   useEffect(() => {
-    if (pushed.current) return;
+    if (!adsOn || pushed.current) return;
     pushed.current = true;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -27,7 +30,7 @@ export default function AdSlot({ slot, className = "" }: { slot: string; classNa
     }
   }, []);
 
-  if (process.env.NEXT_PUBLIC_ADS_ENABLED !== "true") return null;
+  if (!adsOn) return null;
 
   return (
     <aside
@@ -37,7 +40,7 @@ export default function AdSlot({ slot, className = "" }: { slot: string; classNa
       <ins
         className="adsbygoogle block w-full"
         style={{ display: "block", minHeight: 100 }}
-        data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT}
+        data-ad-client={site.ads.client}
         data-ad-slot={slot}
         data-ad-format="auto"
         data-full-width-responsive="true"

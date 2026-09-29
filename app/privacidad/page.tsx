@@ -27,18 +27,33 @@ export default function PrivacidadPage() {
 
         <h2 className="pt-2 text-[16px] font-semibold text-ink">2. Datos de uso y analítica</h2>
         <p>
-          Utilizamos herramientas de analítica (Vercel Analytics y, eventualmente, Google
-          Analytics) que miden el uso agregado del sitio: páginas visitadas, dispositivo y país de
-          origen. Estos datos son anónimos y no identifican a personas.
+          Utilizamos Google Analytics 4 y Vercel Analytics para medir el uso agregado del sitio:
+          páginas visitadas, tipo de dispositivo, país o ciudad aproximada, cómo llegaste al sitio y
+          acciones como buscar un puente o compartir un reporte. Google Analytics usa cookies propias
+          para distinguir visitas; no usamos estos datos para identificarte personalmente.
         </p>
 
         <h2 className="pt-2 text-[16px] font-semibold text-ink">3. Cookies y publicidad</h2>
         <p>
-          El sitio puede utilizar cookies de terceros —como Google AdSense— para mostrar anuncios
-          relevantes. Google y sus socios pueden usar cookies para personalizar anuncios según tus
-          visitas a este u otros sitios. Puedes desactivar la publicidad personalizada en la
-          configuración de anuncios de tu cuenta de Google, o gestionar las cookies desde tu
-          navegador.
+          El sitio utiliza Google AdSense para mostrar anuncios. Proveedores externos, incluido
+          Google, usan cookies para mostrar anuncios basados en tus visitas anteriores a este y a
+          otros sitios web. Las cookies de publicidad de Google permiten a Google y a sus socios
+          mostrarte anuncios según tus visitas a este y a otros sitios de Internet.
+        </p>
+        <p>
+          Puedes desactivar la publicidad personalizada en la{" "}
+          <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-medium text-sage-ink hover:underline">
+            configuración de anuncios de Google
+          </a>{" "}
+          o en{" "}
+          <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener noreferrer" className="font-medium text-sage-ink hover:underline">
+            aboutads.info
+          </a>
+          , y gestionar o borrar las cookies desde tu navegador. Para saber más, consulta{" "}
+          <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="font-medium text-sage-ink hover:underline">
+            cómo usa Google la información de los sitios que usan sus servicios
+          </a>
+          .
         </p>
 
         <h2 className="pt-2 text-[16px] font-semibold text-ink">4. Datos de origen público</h2>

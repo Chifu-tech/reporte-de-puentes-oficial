@@ -25,16 +25,17 @@ function norm(s: string): string {
 }
 
 const CROSSING_ALIASES: Record<string, string[]> = {
-  "puente-libre": ["puente libre", "libre", "bota", "bridge of the americas", "de las americas"],
-  "paso-del-norte": ["paso del norte", "pdn"],
+  "puente-libre": ["puente libre", "libre", "bota", "bridge of the americas", "de las americas", "cordova", "cordoba"],
+  "paso-del-norte": ["paso del norte", "pdn", "santa fe", "puente santa fe"],
   "puente-stanton": ["stanton", "lerdo"],
   "puente-zaragoza": ["zaragoza", "ysleta", "zaragoza ysleta"],
-  "san-ysidro": ["san ysidro", "san isidro"],
+  "san-ysidro": ["san ysidro", "san isidro", "puerta mexico"],
+  "pedwest-el-chaparral": ["pedwest", "ped west", "chaparral", "el chaparral"],
   cbx: ["cbx", "cross border xpress", "cross border express", "aeropuerto de tijuana"],
   "otay-mesa": ["otay mesa", "otay"],
   "puente-tecate": ["tecate"],
-  "calexico-oeste": ["calexico oeste", "calexico west", "puente nuevo"],
-  "calexico-este": ["calexico este", "calexico east"],
+  "calexico-oeste": ["calexico oeste", "calexico west", "garita centro", "garita vieja"],
+  "calexico-este": ["calexico este", "calexico east", "nuevo mexicali", "mexicali 2", "garita nueva"],
   "los-algodones": ["algodones", "andrade"],
   "puente-san-luis": ["san luis 1", "san luis i", "puente san luis", "san luis rio colorado"],
   "puente-mariposa": ["mariposa"],
@@ -44,20 +45,26 @@ const CROSSING_ALIASES: Record<string, string[]> = {
   "puerto-columbus": ["columbus", "palomas"],
   "puente-eagle-pass-1": ["eagle pass 1", "puente uno", "puente 1 eagle"],
   "puente-eagle-pass-2": ["eagle pass 2", "camino real", "puente dos", "puente 2 eagle"],
-  "puente-laredo-1": ["laredo 1", "juarez lincoln", "puente uno laredo", "puente 1 laredo"],
-  "puente-laredo-2": ["laredo 2", "convento", "puente 2 laredo", "puerto 2 laredo"],
+  "puente-laredo-1": ["laredo 1", "puerta de las americas", "gateway to the americas", "convent", "puente uno laredo", "puente 1 laredo"],
+  "puente-laredo-2": ["laredo 2", "juarez lincoln", "puente 2 laredo", "puerto 2 laredo"],
   "puente-colombia": ["colombia", "solidaridad"],
   "puente-hidalgo": ["hidalgo"],
-  "puente-pharr": ["pharr"],
+  "puente-pharr": ["pharr", "nuevo amanecer"],
   "puente-anzalduas": ["anzalduas", "anzaluas"],
   "puente-donna": ["donna", "rio bravo"],
   "puente-progreso": ["progreso"],
   "puente-roma": ["roma", "miguel aleman"],
   "puente-camargo": ["camargo"],
-  "puente-gateway": ["gateway"],
-  "puente-bm": ["b y m", "by m", "veteranos"],
-  "puente-veterans": ["veterans", "libre matamoros", "puente libre de matamoros"],
-  "puente-los-indios": ["los indios", "indios"],
+  "puente-gateway": ["gateway", "puente nuevo", "puente nuevo matamoros"],
+  "puente-bm": ["b y m", "by m", "puente viejo", "puente viejo matamoros"],
+  "puente-veterans": ["veterans", "veteranos", "los tomates", "tomates"],
+  "puente-los-indios": ["los indios", "indios", "libre comercio", "lucio blanco"],
+  "puente-santa-teresa": ["santa teresa", "san jeronimo"],
+  "puente-tornillo": ["tornillo", "marcelino serna", "guadalupe"],
+  "puente-fort-hancock": ["fort hancock", "porvenir"],
+  "puente-acuna-del-rio": ["acuna", "del rio"],
+  "garita-naco": ["naco"],
+  "garita-sonoyta": ["sonoyta", "lukeville", "puerto penasco", "rocky point"],
   "puente-presidio": ["presidio", "ojinaga"],
 };
 
@@ -80,6 +87,10 @@ const CITY_ALIASES: Record<string, string[]> = {
   "agua-prieta": ["agua prieta"],
   palomas: ["palomas"],
   ojinaga: ["ojinaga", "presidio"],
+  "ciudad-acuna": ["ciudad acuna", "cd acuna", "acuna", "del rio"],
+  naco: ["naco"],
+  sonoyta: ["sonoyta", "lukeville", "puerto penasco"],
+  "el-porvenir": ["el porvenir", "fort hancock"],
 };
 
 function espera(n: number): string {
@@ -133,7 +144,7 @@ export async function askAsistente(message: string): Promise<AsistenteReply> {
   const msg = norm(message);
 
   const peaton = /\b(a pie|peatonal|peaton|caminando|caminar)\b/.test(msg);
-  const wantsBest = /\b(mejor|conviene|recomiend|rapido|más rapido|mas rapido|cual .*puente|que puente|donde .*menos)\b/.test(msg);
+  const wantsBest = /\b(mejor|conviene|recomiend|rapido|más rapido|mas rapido|cual .*(puente|garita)|que (puente|garita)|donde .*menos)\b/.test(msg);
 
   const crossingMatch = longestMatch(msg, CROSSING_ALIASES);
   const cityMatch = longestMatch(msg, CITY_ALIASES);
