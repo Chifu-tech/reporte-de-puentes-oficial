@@ -1,103 +1,119 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import Link from "next/link";
+import Board from "@/components/Board";
+import AdSlot from "@/components/AdSlot";
+import JsonLd from "@/components/JsonLd";
+import { buildBoard } from "@/lib/board";
+import { sevStyles } from "@/lib/severity";
+import { site } from "@/lib/site";
 
-export default function Home() {
+export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: "Reporte de Puentes Oficial — Tiempo de espera en puentes México–Estados Unidos",
+  description:
+    "Consulta en tiempo real cuánto se tarda el cruce en cada puente internacional de México a Estados Unidos: Ciudad Juárez, Tijuana, Reynosa, Nuevo Laredo, Mexicali, Nogales y más. En coche o a pie, carriles abiertos y cámaras en vivo.",
+  alternates: { canonical: "/" },
+};
+
+export default async function HomePage() {
+  const board = await buildBoard();
+  const total = board.reduce((acc, c) => acc + c.crossings.length, 0);
+
+  // El "puente" del hero: una barra por puente con espera reportada.
+  const withData = board
+    .flatMap((c) => c.crossings)
+    .filter((c) => !c.pedestrianOnly && c.auto.hasData && c.auto.severity !== "cerrado");
+  const maxMin = Math.max(...withData.map((c) => c.auto.minutes ?? 0), 30);
+  const avg =
+    withData.length > 0
+      ? Math.round(
+          withData.reduce((acc, c) => acc + (c.auto.minutes ?? 0), 0) / withData.length
+        )
+      : null;
+  const bars = withData.slice(0, 44);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: site.name,
+          url: site.url,
+          inLanguage: "es-MX",
+          description: site.description,
+        }}
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="mx-auto max-w-2xl px-4 sm:px-6">
+        <header className="pb-6 pt-9">
+          <h1 className="text-balance font-display text-[34px] font-normal leading-[1.05] tracking-tight text-ink sm:text-[42px]">
+            ¿Cuál cruce te conviene hoy?
+          </h1>
+          <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
+            {total} puentes de la frontera México–Estados Unidos, en tiempo real y con datos
+            oficiales de U.S. CBP.
+          </p>
+
+          {bars.length > 0 && (
+            <figure className="mt-7" aria-label="Espera actual de cada puente en una barra">
+              {/* La línea punteada es el otro lado; las barras, los puentes */}
+              <div className="flex h-16 items-end gap-1 border-t border-dashed border-line pt-2 sm:h-20">
+                {bars.map((c) => (
+                  <div
+                    key={c.slug}
+                    className={`w-full rounded-t-[3px] ${sevStyles[c.auto.severity].dot}`}
+                    style={{ height: `${Math.max(10, ((c.auto.minutes ?? 0) / maxMin) * 100)}%` }}
+                  />
+                ))}
+              </div>
+              <figcaption className="mt-2.5 flex flex-wrap items-baseline justify-between gap-2 text-[11.5px] text-ink-faint">
+                <span>Cada barra es un puente — el color es su espera ahora mismo.</span>
+                {avg !== null && (
+                  <span className="tabular">
+                    Espera promedio de la frontera: <strong className="font-semibold text-ink-soft">{avg} min</strong>
+                  </span>
+                )}
+              </figcaption>
+            </figure>
+          )}
+        </header>
+
+        <div id="ciudades">
+          <Board cities={board} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <AdSlot slot="1234567890" className="mt-10" />
+
+        <section className="mt-10 rounded-2xl border border-line bg-surface p-5 sm:p-6">
+          <h2 className="font-display text-[19px] font-normal tracking-tight text-ink">
+            El puente correcto ahorra horas de fila
+          </h2>
+          <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-soft">
+            Las líneas varían más de una hora entre garitas de la misma ciudad: en Juárez, el Libre
+            se satura por la mañana mientras Zaragoza o Santa Teresa fluyen; en Tijuana, Otay puede
+            ahorrarte dos horas contra San Ysidro. Cada pocos minutos consultamos los tiempos de
+            espera oficiales de U.S. Customs and Border Protection: minutos, carriles abiertos,
+            Ready Lane, SENTRI y cruce peatonal.
+          </p>
+          <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-soft">
+            Además, guardamos el historial de cada garita para calcular{" "}
+            <Link href="/mejor-hora-para-cruzar" className="font-medium text-sage-ink hover:underline">
+              la mejor hora para cruzar
+            </Link>
+            . Empieza por tu ciudad:{" "}
+            {board.slice(0, 8).map((c, i) => (
+              <span key={c.slug}>
+                <Link href={`/ciudad/${c.slug}`} className="font-medium text-sage-ink hover:underline">
+                  {c.name}
+                </Link>
+                {i < Math.min(board.length, 8) - 1 ? ", " : "."}
+              </span>
+            ))}
+          </p>
+        </section>
+      </div>
+    </>
   );
 }

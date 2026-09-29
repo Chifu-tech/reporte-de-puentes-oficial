@@ -1,0 +1,25 @@
+name: Snapshot CBP
+
+# Captura los tiempos de espera de la API de U.S. CBP cada 15 minutos
+# y los guarda en la base de datos (Turso) para el historial de
+# "mejor hora para cruzar".
+#
+# Requisitos (Settings → Secrets and variables → Actions):
+#   - Secret CRON_SECRET: el mismo valor que la variable CRON_SECRET en Vercel
+#   - (Opcional) Variable SITE_URL: https://reportedecruces.mx
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al endpoint de snapshot
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.SITE_URL || 'https://reportedecruces.mx' }}/api/cron/snapshot" \
+            --max-time 60 | tee /dev/stderr | grep -q '"ok":true'
