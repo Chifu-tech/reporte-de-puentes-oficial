@@ -9,9 +9,17 @@ Tiempos de espera en vivo de todos los puentes fronterizos entre México y Estad
 ## Estado actual del despliegue
 
 - ✅ Repo: `Chifu-tech/reporte-de-puentes-oficial` (**público** — Actions gratis ilimitadas)
-- ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), deploy automático en cada push a `main`
+- ✅ Vercel: proyecto `reportedepuentes-mx` (equipo *Chifu / chifu-master-projects*), **auto-deploy conectado** en cada push a `main`
 - ✅ Turso: BD `puentes` creada y conectada (env vars en Vercel)
-- ✅ Cron: GitHub Actions cada 15 min **verificado en producción** (workflow `snapshot.yml`)
+- ✅ Captura cada 15 min: **launchd en la Mac de Pablo** (`~/Library/LaunchAgents/mx.reportedepuentes.snapshot.plist`, log en `/tmp/reporte-puentes-cron.log`)
+- ✅ Guard anti-duplicados en `/api/cron/snapshot` (múltiples schedulers seguros)
+- ⚠️ El schedule de GitHub Actions quedó registrado pero NO dispara (cuenta con billing bloqueado cuando se creó; si se recupera, el guard evita dobles capturas). Solución permanente cuando se quiera: cron-job.org (gratis) o arreglar billing de GitHub.
+
+### Scheduler permanente (pendiente menor)
+
+El launchd solo corre con la Mac encendida. Para capturas 24/7 sin huecos:
+1. Crear cuenta en cron-job.org (gratis) → job cada 15 min a `POST https://<dominio>/api/cron/snapshot` con header `Authorization: Bearer <CRON_SECRET>`, **o**
+2. Arreglar el billing de GitHub (también desbloquea Actions de los otros repos)
 
 ### ⏳ ÚNICO PENDIENTE: comprar el dominio
 
